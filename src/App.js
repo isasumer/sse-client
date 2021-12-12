@@ -1,24 +1,41 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useState, useEffect } from "react";
+import "./App.css";
 
 function App() {
+  const [facts, setFacts] = useState([]);
+  const [listening, setListening] = useState(false);
+
+  useEffect(() => {
+    if (!listening) {
+      const events = new EventSource("http://localhost:3001/events");
+
+      events.onmessage = (event) => {
+        const parsedData = JSON.parse(event.data);
+
+        setFacts((facts) => facts.concat(parsedData));
+      };
+
+      setListening(true);
+    }
+  }, [listening, facts]);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <table className="stats-table">
+      <thead>
+        <tr>
+          <th>Fact</th>
+          <th>Source</th>
+        </tr>
+      </thead>
+      <tbody>
+        {facts.map((fact, i) => (
+          <tr key={i}>
+            <td>{fact.info}</td>
+            <td>{fact.source}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
   );
 }
 
